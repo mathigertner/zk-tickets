@@ -8,15 +8,15 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 contract TicketFactory is Ownable {
     using Clones for address;
 
-    // Implementación base (ERC-721 inicializable) a clonar
+    // Base implementation (initializable ERC-721) to clone
     address public implementation;
 
-    // eventId => contrato ERC-721 del evento
+    // eventId => event ERC-721 contract
     mapping(uint256 => address) public eventContractOf;
-    // listado (opcional) para iteración/indexado
+    // list (optional) for iteration/indexing
     address[] public allEvents;
 
-    // --- Errores y eventos ---
+    // --- Errors and events ---
     error InvalidImplementation();
     error EventAlreadyExists();
     error ZeroAddressOwner();
@@ -35,14 +35,14 @@ contract TicketFactory is Ownable {
         emit ImplementationUpdated(impl);
     }
 
-    // Rotar la implementación base (nueva versión auditada)
+    // Rotate the base implementation (new audited version)
     function setImplementation(address impl) external onlyOwner {
         if (impl == address(0)) revert InvalidImplementation();
         implementation = impl;
         emit ImplementationUpdated(impl);
     }
 
-    // Dirección determinística del clone para un eventId dado
+    // Deterministic address of the clone for a given eventId
     function predictEventAddress(
         uint256 eventId
     ) public view returns (address) {
@@ -50,7 +50,7 @@ contract TicketFactory is Ownable {
         return implementation.predictDeterministicAddress(salt, address(this));
     }
 
-    // Crea el contrato ERC-721 del evento (clone determinístico) e inicializa su estado
+    // Creates the event ERC-721 contract (deterministic clone) and initializes its state
     function createEvent(
         uint256 eventId,
         string calldata name_,
@@ -82,7 +82,7 @@ contract TicketFactory is Ownable {
         emit EventCreated(eventId, nft, name_, symbol_);
     }
 
-    // Helpers de listado
+    // Listing helpers
     function getEventsCount() external view returns (uint256) {
         return allEvents.length;
     }

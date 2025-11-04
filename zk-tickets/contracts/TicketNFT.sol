@@ -6,19 +6,19 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract TicketNFT is Initializable, ERC721Upgradeable, OwnableUpgradeable {
-    // ---- Estado mínimo y claro ----
+    // ---- Minimal and clear state ----
     uint256 private _nextTokenId;
     uint256 public eventId;
 
-    // Nombres on-chain (UX) y tipo por token (lógica/ZK)
+    // On-chain names (UX) and type per token (logic/ZK)
     string[] public ticketTypeNames; // 0 -> "General", 1 -> "VIP", ...
-    mapping(uint256 => uint8) public ticketTypeOf; // tokenId -> tipo
+    mapping(uint256 => uint8) public ticketTypeOf; // tokenId -> type
 
-    // Metadata de colección (opcional) y baseURI por token
+    // Collection metadata (optional) and baseURI per token
     string private _baseTokenURI;
     string public contractURI;
 
-    // ---- Inicializador para clones ----
+    // ---- Initializer for clones ----
     function initialize(
         uint256 eventId_,
         string calldata name_,
@@ -35,13 +35,13 @@ contract TicketNFT is Initializable, ERC721Upgradeable, OwnableUpgradeable {
         _baseTokenURI = baseURI_;
         contractURI = contractURI_;
 
-        // copiar nombres de tipos
+        // copy type names
         for (uint256 i = 0; i < ticketTypeNames_.length; i++) {
             ticketTypeNames.push(ticketTypeNames_[i]);
         }
     }
 
-    // ---- Mint controlado por el organizer (owner) ----
+    // ---- Mint controlled by the organizer (owner) ----
     function mint(
         address to,
         uint8 ticketType
@@ -52,7 +52,7 @@ contract TicketNFT is Initializable, ERC721Upgradeable, OwnableUpgradeable {
         ticketTypeOf[tokenId] = ticketType;
     }
 
-    // ---- Lecturas de apoyo ----
+    // ---- Helper read functions ----
     function getTicketTypes() external view returns (string[] memory) {
         return ticketTypeNames;
     }
