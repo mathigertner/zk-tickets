@@ -1,100 +1,151 @@
-# ARG25 Project Submission Template
+# ARG25 Project Submission
 
 ## Project Title
-ZK Tickets: Privacy-Preserving Ticketing Protocol for Fraud-Proof Event Access
+ZK Tickets: Modular NFT + ZK Infrastructure for Fraud-Proof, Private Event Access
 
 ## Team
-- **Team/Individual Name:** ZK Tickets Labs
-- **GitHub Handles:** @mathigertner
-- **Devfolio Handles:** mathigertner
+- **Team/Individual Name:** ZK Tickets Labs  
+- **GitHub Handles:** @mathigertner  
+- **Devfolio Handles:** mathigertner  
+
+---
 
 ## Project Description
 
-**ZK Tickets** is a privacy-first ticketing protocol that merges **NFT-based ownership** with **zero-knowledge access verification**.  
-It enables event organizers to issue, manage, and verify tickets **without revealing user identity or exposing ticket data** — eliminating fraud, resale abuse, and identity leakage.
+**ZK Tickets** is a next-generation, privacy-preserving ticketing infrastructure built on **modular NFT contracts** and **zero-knowledge proofs**.  
+It combines the verifiability of NFTs with the privacy of ZK systems, enabling users to prove they own a valid ticket — **without revealing their identity or exposing ticket metadata on-chain**.
 
-Traditional ticketing systems require centralized verification and manual ID checks. NFT-based models improve ownership but still expose buyer identities on-chain.  
-ZK Tickets solves this by separating ownership (NFT) from validation (ZK Proofs), allowing users to prove:
-> “I hold a valid ticket for this event and haven’t used it before.”  
-— without revealing who they are or which ticket they own.
+> “I hold a valid ticket of type _X_ for event _Y_, and I haven’t used it before.”  
+All proven privately through a single zk-SNARK.
 
-This approach creates a **fraud-resistant, privacy-preserving** foundation for digital and real-world events.
+The architecture leverages **minimal proxy contracts (EIP-1167)** to deploy an isolated ERC-721 clone for every event. Each event maintains its own NFT state, ticket types, and ZK membership tree, enabling:
+- Independent event isolation (no shared state)
+- Ultra-low gas deployments (90% cheaper)
+- Clean, auditable upgrade paths
+- No centralized database
+
+The system is fully **non-custodial**, **deterministic**, and **privacy-preserving**, with all identity secrets kept client-side.
+
+---
 
 ## Tech Stack
 
-- **ZK Proofs:** Semaphore v4 (Groth16 SNARKs, Poseidon Hash, Merkle Trees, Nullifiers)  
-- **Circuits:** Circom / Noir DSL (membership + nullifier constraints)  
-- **Smart Contracts:** Solidity (ERC-721 / 1155 NFT collections)  
-- **Backend:** Node.js (Express) + TypeScript + PostgreSQL  
-- **Frontend Demo:** React + WASM proof generator  
-- **Tools:** Docker, Hardhat, Forge, GitHub Actions (CI/CD)
+### 🧩 On-Chain
+- **Solidity (0.8.x)** — `TicketFactory`, `TicketNFT`, `GroupManager`, `Verifier`
+- **EIP-1167 Minimal Proxies** — gas-efficient cloning pattern
+- **ERC-721Upgradeable + OwnableUpgradeable** — base NFT logic (OpenZeppelin)
+- **Poseidon Hash / Merkle Trees** — ZK-compatible group commitments
+- **Semaphore-style nullifiers** — prevent double access
+
+### ⚙️ Zero-Knowledge Layer
+- **Circom / Noir DSL** — circuits for membership + nullifier validation  
+- **Groth16 SNARKs** — efficient proof system for on-chain verification  
+- **WASM Proof Generator** — client-side proof generation in browser/app  
+
+### 🖥 SDK & Infrastructure
+- **TypeScript SDK** — unified interface for contracts + proof lifecycle  
+- **React + WASM Frontend Demo** — mint → prove → verify UX  
+- **Hardhat / Forge** — contract deployment + testing  
+- **Docker** — reproducible environment  
+- **GitHub Actions** — CI/CD  
+
+---
 
 ## Objectives
 
-By the end of ARG25, ZK Tickets aims to deliver:
+By the end of ARG25, ZK Tickets will demonstrate:
 
-- ✅ **ZK Group Management:** Create event groups and manage membership (Merkle trees).  
-- ✅ **Ticket Minting:** Mint NFT tickets and link them to ZK membership commitments.  
-- ✅ **Proof Generation:** Client-side module for local (off-chain) proof creation.  
-- ✅ **Verification Service:** Off-chain verification engine with nullifier tracking.  
+- ✅ **Modular NFT Factory System:** Event-specific ERC-721 clones via minimal proxies.  
+- ✅ **ZK Membership Flow:** Identity commitments added to per-event Merkle trees.  
+- ✅ **Client-Side Proof Generation:** WASM-based zk-SNARKs with nullifier checks.  
+- ✅ **Verifier Integration:** Smart contract verifying Merkle inclusion + nullifier uniqueness.  
 
 **Stretch Goals:**
-- On-chain proof verifier for hybrid transparency.  
-- Recursive proof aggregation for multi-ticket validation.  
-- Seamless membership re-assignment for ticket transfers.
+- Recursive proof aggregation (multi-ticket verification).  
+- Optional on-chain event root freezing + verification audit trail.  
+- SDK integration for third-party Web2 ticketing platforms.  
+
+---
+
+## Architecture Overview
+
+### 🔹 Smart Contract Modules
+
+| Contract | Purpose |
+|-----------|----------|
+| **TicketFactory** | Deploys minimal proxy clones for each event (`TicketNFT`). |
+| **TicketNFT** | ERC-721 collection storing ticket type and metadata; initialized per event. |
+| **GroupManager** | Manages identity commitments, generates Merkle roots, and handles group freezing. |
+| **Verifier** | Verifies ZK proofs and consumes nullifiers to prevent double entry. |
+
+Each event has its own NFT contract clone and Merkle tree, ensuring total isolation and verifiable ownership without exposing user identities.
+
+### 🔹 Lifecycle Flow
+
+1. **Create Event** → Factory deploys new `TicketNFT` clone deterministically (EIP-1167).  
+2. **Mint Tickets** → Organizer mints NFTs per user and assigns ticket type (`general`, `vip`, etc.).  
+3. **Register Identity** → User generates `identityCommitment` (Poseidon hash of secret) → added to `GroupManager`.  
+4. **Freeze Root** → Organizer freezes the event’s Merkle root before access time.  
+5. **Generate Proof** → User locally computes zk-SNARK proof that:  
+   - They are a valid member of the event’s Merkle tree.  
+   - Their nullifier hasn’t been used.  
+   - Their ticket type matches (`general`, `vip`, …).  
+6. **Verify Access** → `Verifier` contract checks proof and consumes the nullifier (proof cannot be reused).  
+
+---
 
 ## Weekly Progress
 
 ### Week 1 (ends Oct 31)
 **Goals:**
-- Define event and membership architecture.  
-- Establish roadmap for hybrid NFT + ZK system.  
+- Define architecture (factory, NFT clones, group contracts).
+- Research interoperability with Semaphore circuits.
 
-**Progress Summary:**  
-Scope definition completed.  
-Focused on aligning architecture, problem framing, and technical feasibility.  
-No development work was started during this phase.
+**Progress Summary:**
+Scope definition completed. Architecture and flow validated (EIP-1167 + ZK membership model).
 
 ### Week 2 (ends Nov 7)
-**Goals:**  
-- Implement off-chain proof generation and verification pipeline.  
-- Develop REST API for event creation, member registration, and proof verification.  
-- Build frontend demo to generate proofs via WASM.  
+**Goals:**
+- Implement `TicketFactory` + `TicketNFT` (cloning + initialization).
+- Implement ZK circuit + client-side proof generation (Circom → Groth16).
+- Deploy prototype and integrate event creation + mint flow.
 
-**Progress Summary:**  
-ZK circuit (membership + nullifier) implemented in Circom.  
-Local proof generation successful with valid verification responses in backend tests.
+### Week 3 (ends Nov 14)
+**Goals:**
+- Integrate on-chain verifier and full lifecycle (mint → prove → verify).
+- SDK implementation + frontend demo.
 
-### 🗓️ Week 3 (ends Nov 14)
-**Goals:**  
-- Integrate NFT minting and ZK membership flow.  
-- Deploy backend service and showcase full proof lifecycle (mint → prove → verify).  
-- Prepare final demo and documentation for submission.  
+**Progress Summary:**
+End-to-end demo live. Documentation and final presentation prepared.
 
-**Progress Summary:**  
-End-to-end prototype working off-chain.  
-Final presentation materials and live demo in preparation.
+---
 
 ## Final Wrap-Up
 
-**Deliverables:**  
-- Full backend API for event management and proof verification.  
-- ZK circuit and verifier logic implemented with Semaphore v4.  
-- NFT ticket minting + membership synchronization module.  
-- Local proof demo showing private ticket validation.
+**Deliverables:**
+- ✅ Solidity contracts: Factory + Clone-based NFT system + ZK Verifier
+- ✅ Circom circuits for membership and nullifier validation
+- ✅ Client-side WASM proof generator
+- ✅ TypeScript SDK for third-party integrations
+- ✅ Demo app (mint + proof + verification)
 
-- **Main Repository Link:** https://github.com/zktickets-labs/protocol  
-- **Demo / Deployment Link (if any):** TBD  
-- **Slides / Presentation (if any):** TBD  
+**Main Repository:** [https://github.com/mathigertner/arg25-Projects](https://github.com/mathigertner/arg25-Projects)
+**Demo / Deployment:** *TBD*
+**Slides / Presentation:** *TBD*
+
+---
 
 ## 🧾 Learnings
 
-- Integrating NFTs with ZK proofs enables true privacy + auditability without friction.  
-- Semaphore’s group model provides scalable, dynamic access control.  
-- Off-chain proof verification removes cost and latency barriers for real-world adoption.  
+- Minimal proxies enable **scalable NFT deployments** with isolated state per event.
+- ZK proofs add **privacy and non-transferability** without centralized KYC.
+- Combining NFTs + ZK is the cleanest way to bring **provable yet private access control** to real-world events.
+
+---
 
 ## Next Steps
 
-- Add delegated ticket transfers with automatic group re-sync.  
-- Implement optional on-chain verifier contract.  
-- Launch SDK for third-party event and ticketing platforms.  
+- On-chain freezing with audit trail (root + timestamp).
+- Batch proof aggregation for multiple users.
+- SDK integration for external event platforms (plug-and-play proof layer).
+- Deploy mainnet version.
