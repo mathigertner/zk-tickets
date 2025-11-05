@@ -101,9 +101,6 @@ Each event has its own NFT contract clone and Merkle tree, ensuring total isolat
 - Define architecture (factory, NFT clones, group contracts).
 - Research interoperability with Semaphore circuits.
 
-**Progress Summary:**
-Scope definition completed. Architecture and flow validated (EIP-1167 + ZK membership model).
-
 ### Week 2 (ends Nov 7)
 **Goals:**
 - Implement `TicketFactory` + `TicketNFT` (cloning + initialization).
@@ -114,9 +111,6 @@ Scope definition completed. Architecture and flow validated (EIP-1167 + ZK membe
 **Goals:**
 - Integrate on-chain verifier and full lifecycle (mint → prove → verify).
 - SDK implementation + frontend demo.
-
-**Progress Summary:**
-End-to-end demo live. Documentation and final presentation prepared.
 
 ---
 
